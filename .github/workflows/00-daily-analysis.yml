@@ -1,9 +1,9 @@
 name: 每日股票分析
 
 on:
-  # 定时触发 - 每天北京时间 18:00 (UTC 10:00)
+  # 정기 실행 - 한국 시간 평일 08:00 (전날 UTC 23:00)
   schedule:
-    - cron: '0 10 * * 1-5'     # 周一到周五，UTC 10:00 = 北京时间 18:00
+    - cron: '0 23 * * 0-4'     # UTC 일~목 23:00 = 한국 시간 월~금 08:00
   
   # 手动触发
   workflow_dispatch:
@@ -560,16 +560,7 @@ jobs:
             python main.py $FORCE_RUN_ARG
           fi
       
-      - name: 上传分析报告
-        uses: actions/upload-artifact@v6
-        if: always()
-        with:
-          name: analysis-reports-${{ github.run_number }}
-          path: |
-            reports/
-            logs/
-          retention-days: 30
-      
+      # 공개 저장소에 보고서와 로그 파일이 남지 않도록 업로드 단계를 뺐다.
       - name: 显示运行结果
         if: always()
         run: |
@@ -584,7 +575,3 @@ jobs:
             echo "⚠️ 未生成报告文件"
           fi
           echo ""
-          if [ -f "logs/stock_analysis_$(date +%Y%m%d).log" ]; then
-            echo "📜 最近日志（最后 30 行）:"
-            tail -30 logs/stock_analysis_*.log 2>/dev/null || echo "无日志"
-          fi
