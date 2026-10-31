@@ -445,8 +445,16 @@ class NotificationService(
         """Generate the aggregate report content used by merge/save/push paths."""
         normalized_type = self._normalize_report_type(report_type)
         if normalized_type == ReportType.BRIEF:
-            return self.generate_brief_report(results, report_date=report_date)
-        return self.generate_dashboard_report(results, report_date=report_date)
+            report = self.generate_brief_report(results, report_date=report_date)
+        else:
+            report = self.generate_dashboard_report(results, report_date=report_date)
+        if self._get_report_language(results) == "ko":
+            from src.services.us_overnight import build_us_overnight_line
+
+            headline = build_us_overnight_line()
+            if headline:
+                return f"{headline}\n\n{report}"
+        return report
 
     def _collect_models_used(self, results: List[AnalysisResult]) -> List[str]:
         if not self._should_show_llm_model():
